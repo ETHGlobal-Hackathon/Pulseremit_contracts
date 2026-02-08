@@ -7,18 +7,20 @@ contract AgentFactory {
     address[] public deployedAgents;
     mapping(address => bool) public isAgentContract;
     mapping(address => address[]) public ownerAgents;
+    mapping(address => string) public agentNames;
 
-    event AgentCreated(address indexed agentAddress, address indexed owner, address vault);
+    event AgentCreated(address indexed agentAddress, address indexed owner, address vault, string name);
 
-    function createAgent(address owner, address vault) external returns (address) {
+    function createAgent(address owner, address vault, string calldata name) external returns (address) {
         Agent newAgent = new Agent(owner, vault);
         address agentAddr = address(newAgent);
         
         deployedAgents.push(agentAddr);
         isAgentContract[agentAddr] = true;
         ownerAgents[owner].push(agentAddr);
+        agentNames[agentAddr] = name;
 
-        emit AgentCreated(agentAddr, owner, vault);
+        emit AgentCreated(agentAddr, owner, vault, name);
         return agentAddr;
     }
 

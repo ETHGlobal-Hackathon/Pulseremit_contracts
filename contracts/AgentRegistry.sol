@@ -9,6 +9,10 @@ contract AgentRegistry is AccessControl {
     mapping(address => uint256) public agentDailyLimits;
     mapping(address => uint256) public agentDailySpent;
     mapping(address => uint256) public lastSpentReset;
+    mapping(address => bool) public agentPaused;
+
+    event AgentPaused(address indexed agent);
+    event AgentResumed(address indexed agent);
 
     constructor(address admin) {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -28,8 +32,18 @@ contract AgentRegistry is AccessControl {
         agentDailyLimits[agent] = dailyLimit;
     }
 
+    function pauseAgent(address agent) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        agentPaused[agent] = true;
+        emit AgentPaused(agent);
+    }
+
+    function resumeAgent(address agent) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        agentPaused[agent] = false;
+        emit AgentResumed(agent);
+    }
+
     function checkAndSpend(address agent, uint256 amount) external returns (bool) {
-        if (!hasRole(AGENT_ROLE, agent)) return false;
+        if (!hasRole(AGENT_ROLE, agent) || agentPaused[agent]) return false;
         
         uint256 currentDay = block.timestamp / 1 days;
         if (lastSpentReset[agent] < currentDay) {

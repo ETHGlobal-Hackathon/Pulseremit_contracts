@@ -49,12 +49,12 @@ contract RemittanceVault is
 
     struct Plan {
         address owner;
+        uint64 interval;
         address recipient;
+        uint64 lastPaid;
+        Status status;
         uint256 amount;
         uint256 balance;
-        uint256 interval;
-        uint256 lastPaid;
-        Status status;
         bytes32 ensNode;
     }
 
@@ -123,12 +123,12 @@ contract RemittanceVault is
 
         plans[planId] = Plan({
             owner: msg.sender,
+            interval: uint64(interval),
             recipient: recipient,
+            lastPaid: uint64(block.timestamp),
+            status: Status.ACTIVE,
             amount: amount,
             balance: amount,
-            interval: interval,
-            lastPaid: block.timestamp,
-            status: Status.ACTIVE,
             ensNode: ensNode
         });
 
@@ -189,7 +189,7 @@ contract RemittanceVault is
             "Compliance not approved"
         );
 
-        plan.lastPaid = block.timestamp;
+        plan.lastPaid = uint64(block.timestamp);
         plan.balance -= plan.amount;
         
         totalVolumeProtected += plan.amount;

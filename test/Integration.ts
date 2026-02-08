@@ -65,29 +65,36 @@ describe("Pulseremit Full Lifecycle Integration", async function () {
         ], { account: user.account });
 
         const plan = await vault.read.plans([0n]);
-        assert.equal(plan[2], amount);
-        assert.equal(plan[3], amount);
+        assert.equal(plan[5], amount);
+        assert.equal(plan[6], amount);
 
         const topUpAmount = parseUnits("50", 6);
         await vault.write.topUpPlan([0n, topUpAmount], { account: user.account });
         const planAfterTopUp = await vault.read.plans([0n]);
-        assert.equal(planAfterTopUp[3], amount + topUpAmount);
+        assert.equal(planAfterTopUp[6], amount + topUpAmount);
 
 
         await vault.write.cancelPlan([0n], { account: user.account });
         const planAfterCancel = await vault.read.plans([0n]);
-        assert.equal(planAfterCancel[3], 0n);
-        assert.equal(planAfterCancel[6], 2);
+        assert.equal(planAfterCancel[6], 0n);
+        assert.equal(planAfterCancel[4], 2);
     });
 
     it("Should facilitate agent creation and execution via Factory", async function () {
         const { admin, agentFactory, vault, agentRegistry, identityRegistry, user, recipient, usdc } = await deploySuite();
 
-        const hash = await agentFactory.write.createAgent([admin.account.address, vault.address]);
+        const agentName = "PrimaryBot";
+        await agentFactory.write.createAgent([admin.account.address, vault.address, agentName]);
         const agentCount = await agentFactory.read.getDeployedAgentsCount();
         assert.equal(agentCount, 1n);
 
         const agentContractAddress = await agentFactory.read.deployedAgents([0n]);
+        const storedName = await agentFactory.read.agentNames([agentContractAddress]);
+        assert.equal(storedName, agentName);
+
+        // Verify multi-agent tracking
+        const ownerAgentCount = await agentFactory.read.getOwnerAgentsCount([admin.account.address]);
+        assert.equal(ownerAgentCount, 1n);
 
         await agentRegistry.write.addAgent([agentContractAddress, parseUnits("5000", 6)]);
 
@@ -99,6 +106,31 @@ describe("Pulseremit Full Lifecycle Integration", async function () {
 
         const isAgent = await agentRegistry.read.isAgent([agentContractAddress]);
         assert.equal(isAgent, true);
+    });
+
+    it("Should respect agent pausing", async function () {
+        const { admin, agentFactory, vault, agentRegistry, identityRegistry, user, recipient, usdc } = await deploySuite();
+
+        await agentFactory.write.createAgent([admin.account.address, vault.address, "TestBot"]);
+        const agentAddr = await agentFactory.read.deployedAgents([0n]);
+        await agentRegistry.write.addAgent([agentAddr, parseUnits("5000", 6)]);
+
+        // Pause the agent
+        await agentRegistry.write.pauseAgent([agentAddr]);
+        let paused = await agentRegistry.read.agentPaused([agentAddr]);
+        assert.equal(paused, true);
+
+        // checkAndSpend should return false for paused agents
+        let canSpend = await agentRegistry.read.checkAndSpend([agentAddr, 100n]);
+        assert.equal(canSpend, false);
+
+        // Resume the agent
+        await agentRegistry.write.resumeAgent([agentAddr]);
+        paused = await agentRegistry.read.agentPaused([agentAddr]);
+        assert.equal(paused, false);
+
+        canSpend = await agentRegistry.read.checkAndSpend([agentAddr, 100n]);
+        assert.equal(canSpend, true);
     });
 
     it("Should support identity flexibility (Address vs ENS)", async function () {
