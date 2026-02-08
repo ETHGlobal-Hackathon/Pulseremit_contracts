@@ -178,7 +178,6 @@ contract RemittanceVault is
         if (plan.amount > consensusThreshold) {
             require(secondaryApprovals[planId][secondaryAgent], "Missing secondary approval");
             require(secondaryAgent != msg.sender, "Same agent");
-            // Persistent approval for automated streams
         }
 
         require(
@@ -198,8 +197,7 @@ contract RemittanceVault is
 
         if (target != address(0)) {
             require(allowedTargets[target], "Target not allowed");
-            // Handle USDC (some versions don't return bool, safeApprove is deprecated in OZ 5.x)
-            // Use forceApprove to handle potential non-zero allowance
+
             usdc.forceApprove(address(lifiExecutor), plan.amount);
             lifiExecutor.execute(address(usdc), target, plan.amount, bridgeData);
             
