@@ -6,6 +6,7 @@ import {Agent} from "./Agent.sol";
 contract AgentFactory {
     address[] public deployedAgents;
     mapping(address => bool) public isAgentContract;
+    mapping(address => address) public getAgent;
 
     event AgentCreated(address indexed agentAddress, address indexed owner, address vault);
 
@@ -15,6 +16,7 @@ contract AgentFactory {
         
         deployedAgents.push(agentAddr);
         isAgentContract[agentAddr] = true;
+        getAgent[owner] = agentAddr;
 
         emit AgentCreated(agentAddr, owner, vault);
         return agentAddr;
