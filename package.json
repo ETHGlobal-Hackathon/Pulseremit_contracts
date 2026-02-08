@@ -1,0 +1,35 @@
+{
+  "name": "pulseremit_contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ETHGlobal-Hackathon/Pulseremit_contracts/issues"
+  },
+  "homepage": "https://github.com/ETHGlobal-Hackathon/Pulseremit_contracts#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.7",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.2",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.19.9",
+    "chai": "^6.2.2",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.1.7",
+    "mocha": "^11.7.5",
+    "typescript": "~5.8.0",
+    "viem": "^2.45.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "dotenv": "^17.2.4"
+  }
+}
