@@ -6,7 +6,7 @@ import {Agent} from "./Agent.sol";
 contract AgentFactory {
     address[] public deployedAgents;
     mapping(address => bool) public isAgentContract;
-    mapping(address => address) public getAgent;
+    mapping(address => address[]) public ownerAgents;
 
     event AgentCreated(address indexed agentAddress, address indexed owner, address vault);
 
@@ -16,7 +16,7 @@ contract AgentFactory {
         
         deployedAgents.push(agentAddr);
         isAgentContract[agentAddr] = true;
-        getAgent[owner] = agentAddr;
+        ownerAgents[owner].push(agentAddr);
 
         emit AgentCreated(agentAddr, owner, vault);
         return agentAddr;
@@ -24,5 +24,9 @@ contract AgentFactory {
 
     function getDeployedAgentsCount() external view returns (uint256) {
         return deployedAgents.length;
+    }
+
+    function getOwnerAgentsCount(address owner) external view returns (uint256) {
+        return ownerAgents[owner].length;
     }
 }
